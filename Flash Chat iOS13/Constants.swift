@@ -7,7 +7,7 @@
 //
 
 struct K {
-    static let appName = "⚡️Cooligan"
+    static let appName = "🏈Cooligan"
     static let cellIdentifier = "ReusableCell"
     static let cellNibName = "MessageCell"
     static let registerSegue = "RegisterToChat"
