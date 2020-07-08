@@ -17,7 +17,18 @@ class ChatViewController: UIViewController {
     let db = Firestore.firestore()
     
     var messages: [Message] = []
+    var teamName: String = ""
     
+    init(name:String) {
+        self.teamName = name
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        self.teamName = ""
+        super.init(coder: coder)
+        //fatalError("init(coder:) has not been implemented")
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
@@ -103,9 +114,20 @@ extension ChatViewController: UITableViewDataSource {
         let message = messages[indexPath.row]
         
         let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as! MessageCell
+        if (message.sender != Auth.auth().currentUser?.email && teamName == K.teamA) || (message.sender == Auth.auth().currentUser?.email && teamName == K.teamB) {
+            
+            // hide these messages
+            cell.label.text = ""
+//            cell.rightImageView.isHidden = true
+//            cell.leftImageView.isHidden = true
+//            cell.messageBubble.isHidden = true
+            return cell
+        }
+        
         cell.label.text = message.body
         
         //This is a message from the current user.
+//        if message.sender == Auth.auth().currentUser?.email {
         if message.sender == Auth.auth().currentUser?.email {
             cell.leftImageView.isHidden = true
             cell.rightImageView.isHidden = false

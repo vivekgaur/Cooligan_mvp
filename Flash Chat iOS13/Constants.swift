@@ -13,6 +13,8 @@ struct K {
     static let registerSegue = "RegisterToTabController"
     static let loginSegue = "LoginToTabController"
     static let tabBarSegue = "TeamTabBarController"
+    static let teamA = "🏈Team A"
+    static let teamB = "🏈Team B"
 
     
     struct BrandColors {
