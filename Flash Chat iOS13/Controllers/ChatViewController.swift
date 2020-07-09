@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import SpriteKit
 
 class ChatViewController: UIViewController {
 
@@ -18,6 +19,9 @@ class ChatViewController: UIViewController {
     
     var messages: [Message] = []
     var teamName: String = ""
+    
+    // Sprite Kit Scene
+    private lazy var animationView = SKView()
     
     init(name:String) {
         self.teamName = name
@@ -38,6 +42,7 @@ class ChatViewController: UIViewController {
         tableView.register(UINib(nibName: K.cellNibName, bundle: nil), forCellReuseIdentifier: K.cellIdentifier)
         
         loadMessages()
+        
         
     }
     
@@ -140,11 +145,101 @@ extension ChatViewController: UITableViewDataSource {
             cell.rightImageView.isHidden = true
             cell.messageBubble.backgroundColor = UIColor(named: K.BrandColors.purple)
             cell.label.textColor = UIColor(named: K.BrandColors.lightPurple)
+            startScene()
         }
-        
-      
-      
+       
         return cell
+    }
+    
+}
+
+extension ChatViewController {
+    override func loadView() {
+        super.loadView()
+        view.addSubview(animationView)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Make sure we don't recreate the scene when the view re-appears
+        guard animationView.scene == nil else {
+            return
+        }
+        view.addSubview(animationView)
+        animationView.allowsTransparency = true
+        animationView.backgroundColor = .clear
+        //startScene()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        animationView.center.x = view.bounds.midX
+        animationView.center.y = view.bounds.midY
+    }
+}
+
+// MARK: Sprite Kit Emoji animation
+extension ChatViewController {
+    
+    func startScene() {
+        let scene = makeScene()
+        animationView.frame.size = scene.size
+        animationView.presentScene(scene)
+    }
+    
+    func makeScene() -> SKScene {
+        let minimumDimension = min(view.frame.width, view.frame.height)
+        let size = CGSize(width: minimumDimension, height: minimumDimension)
+
+        let scene = SKScene(size: size)
+        scene.backgroundColor = .clear
+        addEmoji(to: scene)
+        animateNodes(scene.children)
+        return scene
+    }
+    
+    func addEmoji(to scene: SKScene) {
+        let allEmoji: [Character] = ["🐸", "🐙", "🐒", "🕷"]
+        let distance = floor(scene.size.width / 4)
+
+        for rowIndex in 1...3 {
+        for (index, emoji) in allEmoji.enumerated() {
+            let node = SKLabelNode()
+            node.renderEmoji(emoji)
+            node.position.y = floor(scene.size.height / CGFloat(rowIndex))
+            node.position.x = distance * (CGFloat(index) + 0.5)
+            scene.addChild(node)
+        }
+        }
+    }
+    
+    func animateNodes(_ nodes: [SKNode]) {
+        for (index, node) in nodes.enumerated() {
+            print("Adding Emoji \(node)")
+            node.run(.sequence([
+                .wait(forDuration: TimeInterval(index) * 0.2),
+                .repeatForever(.sequence([
+                    .scale(to: 1.5, duration: 0.3),
+                    .scale(to: 1, duration: 0.3),
+                    .wait(forDuration: 2)
+                ]))
+            ]))
+        }
+    }
+}
+
+// MARK: SKLable
+
+extension SKLabelNode {
+    func renderEmoji(_ emoji: Character) {
+        fontSize = 50
+        text = String(emoji)
+
+        // This enables us to move the label using its center point
+        verticalAlignmentMode = .center
+        horizontalAlignmentMode = .center
     }
 }
 
